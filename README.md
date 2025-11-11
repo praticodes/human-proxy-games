@@ -1,54 +1,18 @@
-# Ad-Hoc Human-AI Coordination Challenge (AH2AC2) 🚀
+# Hanabi-Human-Proxies
+This repository is for playing games with the Hanabi Human Proxies provided in the official repository created by
+the authors of the [AH2AC2 Paper](https://ah2ac2.com/): https://github.com/FLAIROx/ah2ac2/tree/production.
 
-### <b>Update: AH2AC2 was accepted @ ICML 2025 as a spotlight poster!</b> 🎆
+## Common Errors and Debug Information
 
-📌 **Register for the Challenge:** [ah2ac2.com](https://ah2ac2.com)  
-🏅 **Public Leaderboard:** [ah2ac2.com](https://ah2ac2.com)  
-📄 **Research Paper:** [ArXiv](https://arxiv.org/abs/2506.21490)  
-📚 **Docs:** [docs.ah2ac2.com](https://docs.ah2ac2.com)
+### SSL Certificate Verification Issue
+If you see an error similar to `ssl.SSLCertVerificationError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local 
+      issuer certificate`, try the following steps:
 
+1. `pip install certifi`
+2. `export REQUESTS_CA_BUNDLE=/path/to/certifi/cacert.pem` (for example, `export SSL_CERT_FILE=/opt/anaconda3/lib/python3.13/site-packages/certifi/cacert.pem`)
 
-Welcome to the Ad-Hoc Human-AI Coordination Challenge (AH2AC2)! 
-The objective of AH2AC2 is to facilitate the development of AI agents capable of effective collaboration with human-like partners, especially in scenarios with limited prior interaction data. 
-AH2AC2 is designed to benchmark and drive progress in this area.
+This will ensure Python has the necessary certificates to securely connect to the server.
 
-<p align="center">
-  <img src="images/AH2AC2.png" alt="AH2AC2" />
-</p>
-
-## Dataset 📂
-
-To download the dataset required for the challenge, simply run the following script:
-
-```bash
-python ah2ac/datasets/download_dataset.py
-```
-
-This will download all necessary data into the `ah2ac/datasets/data` directory, organizing everything you need to get started with the challenge.
-
-## Usage 🛠️
-
-We highly recommend using Docker to run our implementation for a consistent environment setup. To get started, use the provided `Dockerfile`.
-This will spin up the required environment for you to run the experiments and simulations for the challenge.
-
-## Baselines 🏆
-
-To download the weights for our baselines the challenge, run the following script:
-```bash
-python ah2ac/models/download_models.py
-```
-
-Evaluation for baseline agents can be found in the `ah2ac2/baselines` directory.
-
-All training scripts are located in the `ah2ac2/training` directory.
-
-
-
-### Docs
-
-If you want to run the docs locally for whatever reason:
-```
-docker build -f docs.Dockerfile -t ah2ac2-docs .
-docker run -p 8000:8000 -v .:/docs ah2ac2-docs
-```
-
+## Attributions
+- All code for running and training human proxy agents is provided by the authors of the [AH2AC2 Paper](https://ah2ac2.com/),
+whose repository we have forked.
