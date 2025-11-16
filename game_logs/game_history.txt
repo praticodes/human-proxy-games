@@ -1,0 +1,15 @@
+Hanabi 3P Game with Behavioral Cloning Agent
+Game ID: 230264410
+Controlling: ['agent_1']
+Agent agent_1 took action: 30 (Waiting for other player(s) to finish their turn.)
+Agent agent_1 took action: 25 (Reveal Rank 1 to Player +2)
+Agent agent_1 took action: 30 (Waiting for other player(s) to finish their turn.)
+Agent agent_1 took action: 30 (Waiting for other player(s) to finish their turn.)
+Agent agent_1 took action: 29 (Reveal Rank 5 to Player +2)
+Agent agent_1 took action: 30 (Waiting for other player(s) to finish their turn.)
+Agent agent_1 took action: 30 (Waiting for other player(s) to finish their turn.)
+Agent agent_1 took action: 0 (Discard card 0)
+Agent agent_1 took action: 30 (Waiting for other player(s) to finish their turn.)
+Agent agent_1 took action: 30 (Waiting for other player(s) to finish their turn.)
+Agent agent_1 took action: 8 (Play card 3)
+Final score: 0
