@@ -16,7 +16,7 @@ from ah2ac2.evaluation.evaluation_space import EvaluationSpace
 
 logging.basicConfig(level=logging.INFO)
 
-_TEST_API_KEY = "9fe7f5024be689793c3782a85467793768061eb49cec4322bc7f9d9aaf1aecf8"
+_TEST_API_KEY = "<API_KEY>"
 _EVALUATION_API_KEY = "<API_KEY>"
 _NUM_CONCURRENT_EVAL_INSTANCES = 3
 
