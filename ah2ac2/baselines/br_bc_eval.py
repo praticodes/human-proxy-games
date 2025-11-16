@@ -12,7 +12,9 @@ from flax.linen.initializers import constant, orthogonal
 from flax import struct
 from flax import core
 from typing import Callable, Any, Dict, Sequence
-from jaxmarl.wrappers.baselines import load_params
+from safetensors.flax import load_file
+from flax.traverse_util import unflatten_dict
+import os
 from ah2ac2.evaluation.evaluation_space import EvaluationSpace
 
 logging.basicConfig(level=logging.INFO)
@@ -84,8 +86,17 @@ class AgentSpecification:
         self.num_players = num_players
 
     def init_agent(self):
-        agent_params = load_params(f"{self.path}.safetensors")["params"]
-        return BrBcAgent.create(num_players=self.num_players, params=agent_params)
+        # Create absolute path to model files.
+        path = os.path.join(
+            os.path.dirname(__file__),
+            self.path
+        )
+        flat_params = load_file(f"{path}.safetensors")
+        
+        tuple_keys = {tuple(k.split(',')): v for k, v in flat_params.items()}
+        agent_params = unflatten_dict(tuple_keys)
+        
+        return BrBcAgent.create(num_players=self.num_players, params=agent_params['params'])
 
 
 async def interaction_test_2p():
@@ -192,24 +203,27 @@ async def _run_all() -> None:
     logging.info("Running 3P interaction test.")
     await interaction_test_3p()
 
-    logging.info(f"Running evaluation with {_NUM_CONCURRENT_EVAL_INSTANCES} concurrent instances.")
+    try:
+        logging.info(f"Running evaluation with {_NUM_CONCURRENT_EVAL_INSTANCES} concurrent instances.")
 
-    async def _run_one_instance(idx: int):
-        """Wrapper around main() so exceptions don’t bubble out."""
-        try:
-            logging.info(f"Starting main instance {idx}.", )
-            await main()
-            logging.info(f"Main instance {idx} finished successfully.")
-        except Exception as exc:
-            logging.error(
-                "Main instance %d crashed: %s", idx, exc, exc_info=True
-            )
+        async def _run_one_instance(idx: int):
+            """Wrapper around main() so exceptions don’t bubble out."""
+            try:
+                logging.info(f"Starting main instance {idx}.", )
+                await main()
+                logging.info(f"Main instance {idx} finished successfully.")
+            except Exception as exc:
+                logging.error(
+                    "Main instance %d crashed: %s", idx, exc, exc_info=True
+                )
 
-    evaluation_loops = [
-        asyncio.create_task(_run_one_instance(i + 1), name=f"main-{i + 1}")
-        for i in range(_NUM_CONCURRENT_EVAL_INSTANCES)
-    ]
-    await asyncio.gather(*evaluation_loops)
+        evaluation_loops = [
+            asyncio.create_task(_run_one_instance(i + 1), name=f"main-{i + 1}")
+            for i in range(_NUM_CONCURRENT_EVAL_INSTANCES)
+        ]
+        await asyncio.gather(*evaluation_loops)
+    except Exception as exc:
+        logging.error("Evaluation crashed: %s", exc, exc_info=True)
 
 
 if __name__ == '__main__':

@@ -7,7 +7,8 @@ from dotenv import load_dotenv
 
 from agents.agent import Agent
 from agents.random_agent import RandomAgent
-from ah2ac2.baselines.bc_eval import AgentSpecification
+from ah2ac2.baselines.bc_eval import AgentSpecification as BCAgentSpecification
+from ah2ac2.baselines.br_bc_eval import AgentSpecification as BRBCAgentSpecification
 from ah2ac2.evaluation.evaluation_environment import EvaluationEnvironment
 from ah2ac2.evaluation.evaluation_space import EvaluationSpace
 
@@ -95,6 +96,7 @@ if __name__ == "__main__":
         candidate_position=[agent_position]
     )
 
+    # Prompt user to select an agent
     agent_to_play = None
     agent_type = ""
 
@@ -105,19 +107,29 @@ if __name__ == "__main__":
         print("Select an agent to play with:")
         print("1: Random Agent")
         print("2: Behavioral Cloning Baseline Agent")
-        choice = input("Enter your choice (1 or 2): ")
+        print("3: Best Response Behavioral Cloning Agent")
+        choice = input("Enter your choice (1, 2, or 3): ")
 
-        # Save user choice
+        # Save and initialize user choice
         if choice == "1":
             agent_to_play = RandomAgent()
             agent_type = "Random"
         elif choice == "2":
-            agent_spec = AgentSpecification(
+            agent_spec = BCAgentSpecification(
                 "BC-1k-3p",
                 "../models/bc_1k/epoch22_seed0_valacc0.397_3p"
             )
             agent_to_play = agent_spec.init_agent()
             agent_type = "Behavioral Cloning"
+        elif choice == "3":
+            agent_spec = BRBCAgentSpecification(
+                "BR-BC-1k-3p",
+                "../models/br_bc_1k/seed0_step76292_3p",
+                num_players=3
+            )
+            agent_to_play = agent_spec.init_agent()
+            agent_type = "Best Response Behavioral Cloning"
+
         else:
             print("Invalid choice. Please try again.")
 
