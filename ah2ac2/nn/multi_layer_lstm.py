@@ -18,7 +18,7 @@ class LstmCellWithHiddenStateReset(nn.OptimizedLSTMCell):
         if isinstance(x, tuple):
             x, resets = x
             init_rnn_state = self.initialize_carry(jax.random.PRNGKey(0), (x.shape[0], x.shape[1]))
-            carry = jax.tree_map(
+            carry = jax.tree.map(
                 lambda init, old: jnp.where(resets[:, np.newaxis], init, old),
                 init_rnn_state,
                 carry,
@@ -64,7 +64,7 @@ class MultiLayerLstm(nn.Module):
         for i, feature_size in enumerate(self.lstm_features):
             layer = self.lstm(feature_size)
 
-            layer_carry = jax.tree_map(lambda c: c[i], carry)
+            layer_carry = jax.tree.map(lambda c: c[i], carry)
 
             layer_carry, x = layer(layer_carry, x)
             new_c, new_h = layer_carry

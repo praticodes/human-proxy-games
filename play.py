@@ -1,12 +1,15 @@
 import asyncio
-import random
-import os
 import json
+import os
+import random
+
 from dotenv import load_dotenv
-from ah2ac2.evaluation.evaluation_space import EvaluationSpace
-from ah2ac2.evaluation.evaluation_environment import EvaluationEnvironment
+
 from agents.agent import Agent
 from agents.random_agent import RandomAgent
+from ah2ac2.baselines.bc_eval import AgentSpecification
+from ah2ac2.evaluation.evaluation_environment import EvaluationEnvironment
+from ah2ac2.evaluation.evaluation_space import EvaluationSpace
 
 load_dotenv()
 
@@ -16,7 +19,7 @@ with open("action_descriptions.json", "r") as f:
     ACTION_DESCRIPTIONS = json.load(f)
 
 
-async def play_game(env: EvaluationEnvironment, agent: Agent, history_file: str = None):
+async def play_game(env: EvaluationEnvironment, agent: Agent, agent_type: str, history_file: str = None):
     """
     Plays a single game of Hanabi using the inputted controlled agent and optionally saves all moves to a history file,
     if specified.
@@ -24,6 +27,7 @@ async def play_game(env: EvaluationEnvironment, agent: Agent, history_file: str 
     Args:
         env: The evaluation environment to play the game in.
         agent: The controlled agent that will play the game with human proxies.
+        agent_type: The type of agent being used.
         history_file: The path to the file to save the game history to.
 
     Raises:
@@ -41,6 +45,7 @@ async def play_game(env: EvaluationEnvironment, agent: Agent, history_file: str 
 
         if history_file:
             with open(history_file, "w") as f:
+                f.write(f"Hanabi 3P Game with {agent_type} Agent\n")
                 f.write(f"Game ID: {env.info.game_id}\n")
                 f.write(f"Controlling: {env.info.candidate_controlling}\n")
 
@@ -62,7 +67,7 @@ async def play_game(env: EvaluationEnvironment, agent: Agent, history_file: str 
 
                 if history_file:
                     with open(history_file, "a") as f:
-                        f.write(f"Agent {agent_id} took action: {action} ({ACTION_DESCRIPTIONS[action - 1]})\n")
+                        f.write(f"Agent {agent_id} took action: {action} ({ACTION_DESCRIPTIONS[action]})\n")
 
             # Send actions and get the next state
             observations, current_score, done, legal_moves = await env.step(actions_to_send)
@@ -90,11 +95,34 @@ if __name__ == "__main__":
         candidate_position=[agent_position]
     )
 
-    # Create the agent we are controlling: by default, it will be one RandomAgent.
-    agent_to_play = RandomAgent()
+    agent_to_play = None
+    agent_type = ""
+
+    # Set controlled agent as per user's choice
+    while agent_to_play is None:
+
+        # Prompt user for agent selection
+        print("Select an agent to play with:")
+        print("1: Random Agent")
+        print("2: Behavioral Cloning Baseline Agent")
+        choice = input("Enter your choice (1 or 2): ")
+
+        # Save user choice
+        if choice == "1":
+            agent_to_play = RandomAgent()
+            agent_type = "Random"
+        elif choice == "2":
+            agent_spec = AgentSpecification(
+                "BC-1k-3p",
+                "../models/bc_1k/epoch22_seed0_valacc0.397_3p"
+            )
+            agent_to_play = agent_spec.init_agent()
+            agent_type = "Behavioral Cloning"
+        else:
+            print("Invalid choice. Please try again.")
 
     # Define the history file path
     history_file_path = os.path.join("game_logs", "game_history.txt")
 
     # Play the game!
-    asyncio.run(play_game(test_env_3p, agent_to_play, history_file_path))
+    asyncio.run(play_game(test_env_3p, agent_to_play, agent_type, history_file_path))

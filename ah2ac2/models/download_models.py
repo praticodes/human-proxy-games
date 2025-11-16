@@ -6,4 +6,4 @@ def download_weights(local_dir="."):
 
 
 if __name__ == '__main__':
-    download_weights()
+    download_weights("ah2ac2/models")

@@ -4,17 +4,19 @@ import asyncio
 import logging
 import time
 import jax.numpy as jnp
+import os
 
 from typing import Callable, Any
 from flax import core, struct
-from jaxmarl.wrappers.baselines import load_params
+from safetensors.flax import load_file
+from flax.traverse_util import unflatten_dict
 from omegaconf import OmegaConf
 from ah2ac2.nn.multi_layer_lstm import MultiLayerLstm
 from ah2ac2.evaluation.evaluation_space import EvaluationSpace
 
 logging.basicConfig(level=logging.INFO)
 
-_TEST_API_KEY = "<API_KEY>"
+_TEST_API_KEY = "9fe7f5024be689793c3782a85467793768061eb49cec4322bc7f9d9aaf1aecf8"
 _EVALUATION_API_KEY = "<API_KEY>"
 _NUM_CONCURRENT_EVAL_INSTANCES = 3
 
@@ -59,8 +61,17 @@ class AgentSpecification:
         self.path = path
 
     def init_agent(self):
-        agent_config = OmegaConf.load(f"{self.path}.yaml")
-        agent_params = load_params(f"{self.path}.safetensors")
+        # Create absolute path to model files.
+        path = os.path.join(
+            os.path.dirname(__file__),
+            self.path
+        )
+        agent_config = OmegaConf.load(f"{path}.yaml")
+        flat_params = load_file(f"{path}.safetensors")
+        
+        tuple_keys = {tuple(k.split(',')): v for k, v in flat_params.items()}
+        agent_params = unflatten_dict(tuple_keys)
+        
         return LstmBcAgent.create(agent_config=agent_config, params=agent_params)
 
 
@@ -166,24 +177,29 @@ async def _run_all() -> None:
     logging.info("Running 3P interaction test.")
     await interaction_test_3p()
 
-    logging.info(f"Running evaluation with {_NUM_CONCURRENT_EVAL_INSTANCES} concurrent instances.")
+    # The following code requires the EVALUATION_API_KEY, which has limited uses.
+    # It will not run correctly with a TEST_API_KEY.
+    try:
+        logging.info(f"Running evaluation with {_NUM_CONCURRENT_EVAL_INSTANCES} concurrent instances.")
 
-    async def _run_one_instance(idx: int):
-        """Wrapper around main() so exceptions don’t bubble out."""
-        try:
-            logging.info(f"Starting main instance {idx}.", )
-            await main()
-            logging.info(f"Main instance {idx} finished successfully.")
-        except Exception as exc:
-            logging.error(
-                "Main instance %d crashed: %s", idx, exc, exc_info=True
-            )
+        async def _run_one_instance(idx: int):
+            """Wrapper around main() so exceptions don’t bubble out."""
+            try:
+                logging.info(f"Starting main instance {idx}.", )
+                await main()
+                logging.info(f"Main instance {idx} finished successfully.")
+            except Exception as exc:
+                logging.error(
+                    "Main instance %d crashed: %s", idx, exc, exc_info=True
+                )
 
-    evaluation_loops = [
-        asyncio.create_task(_run_one_instance(i + 1), name=f"main-{i + 1}")
-        for i in range(_NUM_CONCURRENT_EVAL_INSTANCES)
-    ]
-    await asyncio.gather(*evaluation_loops)
+        evaluation_loops = [
+            asyncio.create_task(_run_one_instance(i + 1), name=f"main-{i + 1}")
+            for i in range(_NUM_CONCURRENT_EVAL_INSTANCES)
+        ]
+        await asyncio.gather(*evaluation_loops)
+    except Exception as exc:
+        logging.error("Evaluation crashed: %s", exc, exc_info=True)
 
 
 if __name__ == '__main__':
