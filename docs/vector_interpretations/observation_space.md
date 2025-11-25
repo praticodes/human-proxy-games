@@ -16,14 +16,14 @@ For simplicity, the table below assumes that the current player viewing the obse
 | 225 - 249 | Vector of Player 3's Card 5 | 25 |
 | **Global Game State** | | |
 | 250 - 299 | Unary Encoding of Remaining Deck Size | 50 |
-| 300 - 304 | Vector of Red Firework | 5 |
-| 305 - 309 | Vector of Yellow Firework | 5 |
-| 310 - 314 | Vector of Green Firework | 5 |
-| 315 - 319 | Vector of White Firework | 5 |
-| 320 - 324 | Vector of Blue Firework | 5 |
-| 325 - 332 | Unary Encoding of Remaining Info Tokens | 8 |
+| 300 - 304 | Unary encoding of the highest rank played for the Red firework. | 5 |
+| 305 - 309 | Unary encoding of the highest rank played for the Yellow firework. | 5 |
+| 310 - 314 | Unary encoding of the highest rank played for the Green firework. | 5 |
+| 315 - 319 | Unary encoding of the highest rank played for the White firework. | 5 |
+| 320 - 324 | Unary encoding of the highest rank played for the Blue firework. | 5 |
+| 325 - 332 | Unary encoding of the number of remaining info (hint) tokens. | 8 |
 | 333 - 335 | Unary Encoding of Remaining Life Tokens | 3 |
-| 336 - 385 | Thermometer Encoding of Discard Pile | 50 |
+| 336 - 385 | Thermometer encoding over all 50 cards in the deck indicating which have been discarded. | 50 |
 | **Previous Action** | | |
 | 386 - 389 | Vector of Previous Player’s Action Type | 4 |
 | 390 - 391 | Vector of Target from Previous Action | 2 |
@@ -32,13 +32,13 @@ For simplicity, the table below assumes that the current player viewing the obse
 | 402 - 403 | Vector of Which Cards in Hand were Revealed | 2 |
 | 404 - 405 | Position of the Card that was played or dropped | 2 |
 | 406 - 430 | Vector Representing Card that was last played | 25 |
-| **This Player's Hand Knowledge (5 cards)** | | |
+| **This Player's Hand Knowledge (5 cards)** | Each card's knowledge is a 35-bit vector: 5 bits for a color hint, 5 for a rank hint, and 25 for the AI's belief state. | |
 | 431 - 465 | Revealed Info of This Player’s 0th Card | 35 |
 | 466 - 500 | Revealed Info of This Player’s 1st Card | 35 |
 | 501 - 535 | Revealed Info of This Player’s 2nd Card | 35 |
 | 536 - 570 | Revealed Info of This Player’s 3rd Card | 35 |
 | 571 - 605 | Revealed Info of This Player’s 4th Card | 35 |
-| **Other Players' Hand Knowledge (10 cards)** | | |
+| **Other Players' Hand Knowledge (10 cards)** | See above for the 35-bit structure. | |
 | 606 - 640 | Revealed Info of Player 2's 0th Card | 35 |
 | 641 - 675 | Revealed Info of Player 2's 1st Card | 35 |
 | 676 - 710 | Revealed Info of Player 2's 2nd Card | 35 |
